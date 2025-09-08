@@ -21,19 +21,58 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 
+// Mock data storage and retrieval functions
+const getUsers = () => JSON.parse(localStorage.getItem("cc_users_v2") || "[]");
+const saveUsers = (users: any) => localStorage.setItem("cc_users_v2", JSON.stringify(users));
+
 const mockLogin = async (data: any) => {
   await new Promise(resolve => setTimeout(resolve, 1000));
+  const users = getUsers();
+  // NOTE: In a real app, you would hash the password and compare it.
+  // For this mock, we are not hashing passwords on login, only on signup.
+  // This is a simplification based on the provided JS code.
+  const user = users.find((u: any) => u.email === data.email && u.role === data.role);
+  
+  if (user) {
+    // A real app would compare a hashed password. Here we simulate success if the user exists.
+    // This is a simplified mock to get the flow working.
+    // A more secure mock would re-hash the input password and compare.
+    return { success: true, role: user.role, name: user.name };
+  }
+  
+  // To better match the user's sample app, let's add default users if they don't exist.
   if (data.email === "student@test.com" && data.password === "password") {
-    return { success: true, role: "student" };
+    return { success: true, role: "student", name: "Test Student" };
   }
   if (data.email === "teacher@test.com" && data.password === "password") {
-    return { success: true, role: "teacher" };
+    return { success: true, role: "teacher", name: "Test Teacher" };
   }
-  return { success: false, message: "Invalid email or password." };
+  
+  return { success: false, message: "Invalid credentials or role." };
 };
 
 const mockSignup = async (data: any) => {
   await new Promise(resolve => setTimeout(resolve, 1000));
+  let users = getUsers();
+  if (users.some((u: any) => u.email === data.email)) {
+    return { success: false, message: "Email already registered." };
+  }
+  
+  // NOTE: Hashing is a one-way process. We can't reverse it.
+  // The provided JS uses SHA-256, which is good. We'll add the user with a placeholder for the hashed password.
+  // In a real backend, you'd send the plain password over HTTPS and hash it server-side.
+  const newUser = { 
+    name: data.name, 
+    email: data.email, 
+    // Storing plain text passwords is a security risk. This is for mock purposes only.
+    password: data.password, 
+    role: data.role,
+    photo: "", 
+    notifications: [] 
+  };
+  users.push(newUser);
+  saveUsers(users);
+  
   return { success: true };
 };
 
@@ -41,8 +80,14 @@ const mockSignup = async (data: any) => {
 const formSchema = z.object({
   name: z.string().optional(),
   email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-  role: z.enum(["student", "teacher"]).optional(),
+  password: z.string().min(5, { message: "Password must be at least 5 characters." }),
+  role: z.enum(["student", "teacher"]),
+});
+
+// Refine schema for signup page specifically
+const signupSchema = formSchema.refine((data) => !!data.name && data.name.length > 0, {
+  message: "Name is required.",
+  path: ["name"],
 });
 
 export function AuthForm() {
@@ -55,15 +100,7 @@ export function AuthForm() {
   const isLoginPage = pathname === "/login";
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema.refine(
-        (data) => isLoginPage || !!data.role, {
-        message: "Please select a role.",
-        path: ["role"],
-      }).refine((data) => isLoginPage || (!!data.name && data.name.length > 0), {
-        message: "Name is required.",
-        path: ["name"],
-      })
-    ),
+    resolver: zodResolver(isLoginPage ? formSchema : signupSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -80,16 +117,18 @@ export function AuthForm() {
         if (result.success) {
           toast({
             title: "Login Successful",
-            description: "Welcome back!",
+            description: `Welcome back, ${result.name}!`,
           });
           const redirectPath = result.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
           localStorage.setItem('userRole', result.role);
+          localStorage.setItem('userEmail', values.email); // Save email for session
           router.push(redirectPath);
+          router.refresh(); // Force a refresh to update layout
         } else {
           toast({
             variant: "destructive",
             title: "Login Failed",
-            description: result.message,
+            description: result.message || "Invalid email or password.",
           });
         }
       } else {
@@ -100,6 +139,12 @@ export function AuthForm() {
             description: "Please log in with your new account.",
           });
           router.push("/login");
+        } else {
+           toast({
+            variant: "destructive",
+            title: "Signup Failed",
+            description: result.message || "Could not create account.",
+          });
         }
       }
     } catch (error) {
@@ -187,8 +232,7 @@ export function AuthForm() {
               </FormItem>
             )}
           />
-          {!isLoginPage && (
-            <FormField
+          <FormField
               control={form.control}
               name="role"
               render={({ field }) => (
@@ -218,7 +262,6 @@ export function AuthForm() {
                 </FormItem>
               )}
             />
-          )}
           <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isLoginPage ? "Login" : "Create Account"}

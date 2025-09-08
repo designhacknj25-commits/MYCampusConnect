@@ -15,7 +15,9 @@ export default function Home() {
       const redirectPath = userRole === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
       router.replace(redirectPath);
     }
-  }, [router]);
+    // No dependency array, we want this to run on every render of this page
+    // to prevent a logged-in user from seeing it.
+  });
   
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -56,18 +56,23 @@ export function MainNav({ children }: { children: React.ReactNode }) {
   const role = useUserRole();
   const pathname = usePathname();
   const router = useRouter();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem('userRole');
+    const storedEmail = localStorage.getItem('userEmail');
+    if (!storedRole) {
+      router.push('/login');
+    } else {
+      setUserEmail(storedEmail);
+    }
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem("userRole");
+    localStorage.removeItem("userEmail");
     router.push("/login");
   };
-
-  useEffect(() => {
-    const userRole = localStorage.getItem('userRole');
-    if (!userRole) {
-      router.push('/login');
-    }
-  }, [router]);
 
   const navItems = role === "teacher" ? teacherNav : studentNav;
 
@@ -128,7 +133,7 @@ export function MainNav({ children }: { children: React.ReactNode }) {
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none capitalize">{role}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {role === 'student' ? 'student@test.com' : 'teacher@test.com'}
+                    {userEmail || (role === 'student' ? 'student@test.com' : 'teacher@test.com')}
                   </p>
                 </div>
               </DropdownMenuLabel>
