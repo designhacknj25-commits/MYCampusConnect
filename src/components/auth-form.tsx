@@ -172,7 +172,7 @@ export function AuthForm() {
   return (
     <div className="w-full max-w-md bg-card/50 backdrop-blur-lg border border-border rounded-2xl p-8 shadow-2xl text-foreground transition-all duration-500">
       <div className="text-center mb-8">
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-4 h-12 w-12">
           <Logo className="h-12 w-12 text-primary" />
         </div>
         <h1 className="text-3xl font-bold font-headline">
