@@ -66,12 +66,12 @@
   }
   body {
     @apply bg-background text-foreground;
-    background: linear-gradient(300deg, hsl(var(--background)), #3a3a3a, hsl(var(--background)));
-    background-size: 180% 180%;
-    animation: gradient-animation 18s ease infinite;
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
   }
 
-  @keyframes gradient-animation {
+  @keyframes gradientBG {
     0% {
       background-position: 0% 50%;
     }
