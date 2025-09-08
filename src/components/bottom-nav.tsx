@@ -43,7 +43,7 @@ export function BottomNav() {
                 href={item.href}
                 className={cn(
                   "h-full flex flex-col items-center justify-center gap-1 text-xs transition-colors",
-                  pathname.startsWith(item.href)
+                  pathname === item.href
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
                 )}

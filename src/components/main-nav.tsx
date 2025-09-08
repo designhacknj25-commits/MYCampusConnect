@@ -104,7 +104,7 @@ export function MainNav({ children }: { children: React.ReactNode }) {
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
-                      isActive={pathname.startsWith(item.href)}
+                      isActive={pathname === item.href}
                       tooltip={{ children: item.label, side: "right", align: "center" }}
                     >
                       <Link href={item.href}>
