@@ -9,12 +9,25 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 async function registerForEvent(eventId: string) {
+    console.log(`Registering for event: ${eventId}`);
+    // In a real app, you'd make an API call here.
+    // For now, we'll simulate a delay.
     await new Promise(res => setTimeout(res, 500));
+    // Find the event and add the current user (mocked)
+    const event = mockEvents.find(e => e.id === eventId);
+    if (event && !event.participants.includes('student@test.com')) {
+      event.participants.push('student@test.com');
+    }
     return { success: true };
 }
 
 async function unregisterFromEvent(eventId: string) {
+    console.log(`Unregistering from event: ${eventId}`);
     await new Promise(res => setTimeout(res, 500));
+     const event = mockEvents.find(e => e.id === eventId);
+    if (event) {
+      event.participants = event.participants.filter(p => p !== 'student@test.com');
+    }
     return { success: true };
 }
 
@@ -24,6 +37,8 @@ export default function StudentDashboard() {
   const [category, setCategory] = useState('all');
   const [isPending, startTransition] = useTransition();
 
+  // In a real app, this would come from user data.
+  // We initialize with one registration for demonstration.
   const [registeredEvents, setRegisteredEvents] = useState(['1']);
 
   const filteredEvents = useMemo(() => {
