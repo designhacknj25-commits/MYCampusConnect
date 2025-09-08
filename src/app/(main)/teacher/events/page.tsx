@@ -9,17 +9,23 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { PlusCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ManageEventsPage() {
     const router = useRouter();
+    const { toast } = useToast();
     // In a real app, you would fetch events created by the logged-in teacher.
     // Here we just use the mock data for demonstration.
-    const [events, setEvents] = useState<Event[]>(mockEvents);
+    const [events, setEvents] = useState<Event[]>(() => mockEvents.filter(e => e.teacherEmail === 'teacher@test.com'));
 
     const deleteEvent = (eventId: string) => {
         if (confirm('Are you sure you want to delete this event?')) {
-            setEvents(events.filter(e => e.id !== eventId));
-            // In a real app, you would also make an API call to delete the event.
+            const eventToDelete = mockEvents.findIndex(e => e.id === eventId);
+            if (eventToDelete > -1) {
+                mockEvents.splice(eventToDelete, 1); // Mutate the mock data source
+            }
+            setEvents(prevEvents => prevEvents.filter(e => e.id !== eventId));
+            toast({ title: "Event Deleted" });
         }
     };
     
@@ -52,7 +58,7 @@ export default function ManageEventsPage() {
                             <CardHeader>
                                 {event.poster && (
                                      <div className="relative h-48 w-full mb-4">
-                                        <Image src={event.poster} alt={event.title} layout="fill" className="rounded-t-lg object-cover" />
+                                        <Image src={event.poster} alt={event.title} fill className="rounded-t-lg object-cover" />
                                     </div>
                                 )}
                                 <Badge variant="secondary" className="w-fit">{event.category}</Badge>
