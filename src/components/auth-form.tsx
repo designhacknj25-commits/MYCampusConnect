@@ -20,7 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { Logo } from "@/components/logo";
 
 // Mock data storage and retrieval functions
 const getUsers = () => JSON.parse(localStorage.getItem("cc_users_v2") || "[]");
@@ -172,9 +171,7 @@ export function AuthForm() {
   return (
     <div className="w-full max-w-md bg-card/50 backdrop-blur-lg border border-border rounded-2xl p-8 shadow-2xl text-foreground transition-all duration-500">
       <div className="text-center mb-8">
-        <div className="flex justify-center mb-4 h-16 w-16">
-          <Logo className="h-16 w-16" />
-        </div>
+        
         <h1 className="text-3xl font-bold font-headline">
           {isLoginPage ? "Welcome Back" : "Create an Account"}
         </h1>

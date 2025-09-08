@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Logo } from '@/components/logo';
 
 export default function Home() {
   const router = useRouter();
@@ -23,9 +22,7 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent">
       <main className="flex flex-col items-center justify-center w-full flex-1 px-4 sm:px-20 text-center">
         <div className="bg-card/50 backdrop-blur-lg border border-border rounded-2xl p-8 sm:p-12 shadow-2xl max-w-2xl text-foreground transition-all duration-500 hover:shadow-primary/20">
-          <div className="flex justify-center mb-6 h-20 w-20">
-            <Logo className="h-20 w-20" />
-          </div>
+          
           <h1 className="text-4xl sm:text-6xl font-bold font-headline mb-4">
             Welcome to MyCampusConnect
           </h1>

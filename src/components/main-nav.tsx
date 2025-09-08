@@ -12,6 +12,7 @@ import {
   PlusCircle,
   Settings,
   Send,
+  Loader2,
 } from "lucide-react";
 
 import { useUserRole } from "@/hooks/use-user-role";
@@ -35,7 +36,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { BottomNav } from "./bottom-nav";
-import { Logo } from "./logo";
 import { useSidebar } from "./ui/sidebar";
 
 const studentNav = [
@@ -80,7 +80,7 @@ export function MainNav({ children }: { children: React.ReactNode }) {
   if (!role) {
     return (
         <div className="flex items-center justify-center min-h-screen">
-            <Logo className="h-16 w-16 animate-pulse text-primary" />
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
         </div>
     );
   }
@@ -91,7 +91,6 @@ export function MainNav({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader className="p-4 justify-between flex flex-row items-center">
             <Link href="/" className="flex items-center gap-2">
-              <Logo className="w-8 h-8 text-primary" />
               <h1 className="font-bold text-lg text-foreground group-data-[collapsible=icon]:hidden">
                 MyCampusConnect
               </h1>
