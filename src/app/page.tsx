@@ -27,7 +27,7 @@ export default function Home() {
             <Logo className="h-20 w-20" />
           </div>
           <h1 className="text-4xl sm:text-6xl font-bold font-headline mb-4">
-            Welcome to CampusConnect
+            Welcome to MyCampusConnect
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-8">
             Your all-in-one platform for campus events, communication, and collaboration.
@@ -43,7 +43,7 @@ export default function Home() {
         </div>
       </main>
       <footer className="w-full py-6 text-center text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} CampusConnect. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} MyCampusConnect. All rights reserved.</p>
       </footer>
     </div>
   );

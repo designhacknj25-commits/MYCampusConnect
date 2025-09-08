@@ -179,7 +179,7 @@ export function AuthForm() {
           {isLoginPage ? "Welcome Back" : "Create an Account"}
         </h1>
         <p className="text-muted-foreground">
-          {isLoginPage ? "Sign in to continue to CampusConnect" : "Join our campus community today!"}
+          {isLoginPage ? "Sign in to continue to MyCampusConnect" : "Join our campus community today!"}
         </p>
       </div>
       <Form {...form}>

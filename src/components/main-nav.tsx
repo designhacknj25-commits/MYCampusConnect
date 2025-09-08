@@ -93,7 +93,7 @@ export function MainNav({ children }: { children: React.ReactNode }) {
             <Link href="/" className="flex items-center gap-2">
               <Logo className="w-8 h-8 text-primary" />
               <h1 className="font-bold text-lg text-foreground group-data-[collapsible=icon]:hidden">
-                CampusConnect
+                MyCampusConnect
               </h1>
             </Link>
           </SidebarHeader>
