@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { mockEvents } from '@/lib/data';
+import { getMockEvents, saveMockEvents } from '@/lib/data';
 
 const eventSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -38,16 +38,16 @@ export default function CreateEventPage() {
   });
 
   const onSubmit = (values: z.infer<typeof eventSchema>) => {
-    // In a real app, you would make an API call here.
-    // For this prototype, we'll just add it to our mock data array.
+    const allEvents = getMockEvents();
     const newEvent = {
         id: `evt${Date.now()}`,
         ...values,
         poster: `https://picsum.photos/seed/evt${Date.now()}/600/400`,
-        teacherEmail: 'teacher@test.com', // mock email
+        teacherEmail: localStorage.getItem('userEmail') || 'teacher@test.com',
         participants: [],
     };
-    mockEvents.push(newEvent);
+    
+    saveMockEvents([...allEvents, newEvent]);
 
     toast({
       title: 'Event Created!',
@@ -115,7 +115,7 @@ export default function CreateEventPage() {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Event Date</FormLabel>
-                        <FormControl><Input type="date" {...field} /></FormControl>
+                        <FormControl><Input type="datetime-local" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -126,7 +126,7 @@ export default function CreateEventPage() {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Registration Deadline</FormLabel>
-                        <FormControl><Input type="date" {...field} /></FormControl>
+                        <FormControl><Input type="datetime-local" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}

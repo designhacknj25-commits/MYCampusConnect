@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { EventCard } from '@/components/event-card';
-import { mockEvents } from '@/lib/data';
-import { type Event } from '@/lib/data';
+import { getMockEvents, saveMockEvents, type Event } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
 export default function MyRegistrationsPage() {
@@ -13,18 +12,24 @@ export default function MyRegistrationsPage() {
   useEffect(() => {
     const userEmail = localStorage.getItem('userEmail');
     if (userEmail) {
-      const registered = mockEvents.filter(event => event.participants.includes(userEmail));
+      const allEvents = getMockEvents();
+      const registered = allEvents.filter(event => event.participants.includes(userEmail));
       setMyEvents(registered);
     }
   }, []);
 
   const handleUnregister = useCallback((eventId: string) => {
     const userEmail = localStorage.getItem('userEmail');
-    const eventToUpdate = mockEvents.find(e => e.id === eventId);
+    const allEvents = getMockEvents();
+    const eventToUpdate = allEvents.find(e => e.id === eventId);
 
     if (eventToUpdate && userEmail) {
-      eventToUpdate.participants = eventToUpdate.participants.filter(p => p !== userEmail);
+      const updatedEvent = { ...eventToUpdate, participants: eventToUpdate.participants.filter(p => p !== userEmail) };
+      const updatedEvents = allEvents.map(e => e.id === eventId ? updatedEvent : e);
+      
+      saveMockEvents(updatedEvents);
       setMyEvents(prev => prev.filter(e => e.id !== eventId));
+      
       toast({ title: "Successfully Unregistered" });
     } else {
       toast({ variant: "destructive", title: "Failed to Unregister" });

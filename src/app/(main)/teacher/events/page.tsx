@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockEvents, type Event } from '@/lib/data';
+import { getMockEvents, saveMockEvents, type Event } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,18 +29,16 @@ export default function ManageEventsPage() {
 
     useEffect(() => {
         const userEmail = localStorage.getItem('userEmail');
-        setEvents(mockEvents.filter(e => e.teacherEmail === userEmail));
+        const allEvents = getMockEvents();
+        setEvents(allEvents.filter(e => e.teacherEmail === userEmail));
     }, []);
 
     const deleteEvent = (eventId: string) => {
-        const eventIndex = mockEvents.findIndex(e => e.id === eventId);
-        if (eventIndex > -1) {
-            mockEvents.splice(eventIndex, 1);
-            setEvents(prevEvents => prevEvents.filter(e => e.id !== eventId));
-            toast({ title: "Event Deleted" });
-        } else {
-            toast({ variant: "destructive", title: "Error deleting event" });
-        }
+        const allEvents = getMockEvents();
+        const updatedEvents = allEvents.filter(e => e.id !== eventId);
+        saveMockEvents(updatedEvents);
+        setEvents(prevEvents => prevEvents.filter(e => e.id !== eventId));
+        toast({ title: "Event Deleted" });
     };
     
     const viewParticipants = (eventId: string) => {
@@ -82,8 +80,8 @@ export default function ManageEventsPage() {
                                 <CardDescription>{event.description}</CardDescription>
                             </CardHeader>
                             <CardContent className="text-sm space-y-2 flex-grow">
-                                <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
-                                <p><strong>Deadline:</strong> {new Date(event.deadline).toLocaleDateString()}</p>
+                                <p><strong>Date:</strong> {new Date(event.date).toLocaleString()}</p>
+                                <p><strong>Deadline:</strong> {new Date(event.deadline).toLocaleString()}</p>
                                 <p><strong>Limit:</strong> {event.limit === 0 ? 'Unlimited' : `${event.participants.length} / ${event.limit}`}</p>
                             </CardContent>
                              <CardFooter className="flex flex-wrap gap-2">

@@ -17,7 +17,23 @@ export type FAQ = {
   answer: string;
 };
 
-export const mockEvents: Event[] = [];
+// This function will be the single source of truth for getting events
+export const getMockEvents = (): Event[] => {
+  if (typeof window === "undefined") {
+    return [];
+  }
+  const events = localStorage.getItem('cc_events_v1');
+  return events ? JSON.parse(events) : [];
+}
+
+// This function will be used to save events
+export const saveMockEvents = (events: Event[]) => {
+    if (typeof window === "undefined") {
+    return;
+  }
+  localStorage.setItem('cc_events_v1', JSON.stringify(events));
+}
+
 
 export const mockFaqs: FAQ[] = [
   {
