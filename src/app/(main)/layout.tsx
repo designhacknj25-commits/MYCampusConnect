@@ -1,4 +1,5 @@
 import { MainNav } from "@/components/main-nav";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function MainLayout({
   children,
@@ -6,8 +7,10 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <MainNav>
-      {children}
-    </MainNav>
+    <SidebarProvider>
+      <MainNav>
+        {children}
+      </MainNav>
+    </SidebarProvider>
   );
 }

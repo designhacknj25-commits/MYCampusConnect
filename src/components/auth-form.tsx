@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Eye, EyeOff, GraduationCap, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import { Logo } from "@/components/logo";
 
 // Mock data storage and retrieval functions
 const getUsers = () => JSON.parse(localStorage.getItem("cc_users_v2") || "[]");
@@ -172,7 +173,7 @@ export function AuthForm() {
     <div className="w-full max-w-md bg-card/50 backdrop-blur-lg border border-border rounded-2xl p-8 shadow-2xl text-foreground transition-all duration-500">
       <div className="text-center mb-8">
         <div className="flex justify-center mb-4">
-          <GraduationCap className="h-12 w-12 text-primary" />
+          <Logo className="h-12 w-12 text-primary" />
         </div>
         <h1 className="text-3xl font-bold font-headline">
           {isLoginPage ? "Welcome Back" : "Create an Account"}
