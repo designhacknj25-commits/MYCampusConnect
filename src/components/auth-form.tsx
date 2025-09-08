@@ -172,14 +172,14 @@ export function AuthForm() {
   return (
     <div className="w-full max-w-md bg-card/50 backdrop-blur-lg border border-border rounded-2xl p-8 shadow-2xl text-foreground transition-all duration-500">
       <div className="text-center mb-8">
-        <div className="flex justify-center mb-4 h-12 w-12">
-          <Logo className="h-12 w-12 text-primary" />
+        <div className="flex justify-center mb-4 h-16 w-16">
+          <Logo className="h-16 w-16" />
         </div>
         <h1 className="text-3xl font-bold font-headline">
           {isLoginPage ? "Welcome Back" : "Create an Account"}
         </h1>
         <p className="text-muted-foreground">
-          {isLoginPage ? "Sign in to continue to MyCampusConnect" : "Join our campus community today!"}
+          {isLoginPage ? "Sign in to continue to CampusConnect" : "Join our campus community today!"}
         </p>
       </div>
       <Form {...form}>
