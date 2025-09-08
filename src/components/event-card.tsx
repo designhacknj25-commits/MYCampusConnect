@@ -12,33 +12,34 @@ import { useToast } from "@/hooks/use-toast";
 interface EventCardProps {
   event: Event;
   isRegistered: boolean;
-  onRegister: (eventId: string) => Promise<void>;
-  onUnregister: (eventId: string) => Promise<void>;
+  onRegister: (eventId: string) => void;
+  onUnregister: (eventId: string) => void;
 }
 
 export function EventCard({ event, isRegistered, onRegister, onUnregister }: EventCardProps) {
   const { toast } = useToast();
-  const seatsLeft = event.limit - event.participants.length;
+  const seatsLeft = event.limit > 0 ? event.limit - event.participants.length : Infinity;
   const deadlinePassed = isPast(new Date(event.deadline));
+  const isFull = seatsLeft <= 0;
 
-  const handleRegister = async () => {
+  const handleRegister = () => {
     if (deadlinePassed) {
       toast({ variant: "destructive", title: "Registration has closed." });
       return;
     }
-    if (seatsLeft <= 0) {
+    if (isFull) {
       toast({ variant: "destructive", title: "This event is full." });
       return;
     }
-    await onRegister(event.id);
+    onRegister(event.id);
   };
 
-  const handleUnregister = async () => {
+  const handleUnregister = () => {
      if (deadlinePassed) {
       toast({ variant: "destructive", title: "The deadline to unregister has passed." });
       return;
     }
-    await onUnregister(event.id);
+    onUnregister(event.id);
   };
 
   return (
@@ -72,7 +73,13 @@ export function EventCard({ event, isRegistered, onRegister, onUnregister }: Eve
           </div>
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-primary" />
-            <span>{seatsLeft > 0 ? `${seatsLeft} of ${event.limit} seats available` : 'Event is full'}</span>
+             <span>
+                {event.limit === 0
+                  ? 'Unlimited seats'
+                  : isFull
+                  ? 'Event is full'
+                  : `${seatsLeft} of ${event.limit} seats available`}
+              </span>
           </div>
         </div>
       </CardContent>
@@ -83,7 +90,7 @@ export function EventCard({ event, isRegistered, onRegister, onUnregister }: Eve
             Unregister
           </Button>
         ) : (
-          <Button className="w-full" onClick={handleRegister} disabled={deadlinePassed || seatsLeft <= 0}>
+          <Button className="w-full" onClick={handleRegister} disabled={deadlinePassed || isFull}>
              <Ticket className="mr-2 h-4 w-4" />
              Register
           </Button>

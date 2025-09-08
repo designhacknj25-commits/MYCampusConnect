@@ -1,70 +1,59 @@
 "use client";
 
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, useEffect } from 'react';
 import { EventCard } from '@/components/event-card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockEvents } from '@/lib/data';
+import { mockEvents, type Event } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-async function registerForEvent(eventId: string) {
-    console.log(`Registering for event: ${eventId}`);
-    // In a real app, you'd make an API call here.
-    // For now, we'll simulate a delay.
-    await new Promise(res => setTimeout(res, 500));
-    // Find the event and add the current user (mocked)
-    const event = mockEvents.find(e => e.id === eventId);
-    if (event && !event.participants.includes('student@test.com')) {
-      event.participants.push('student@test.com');
-    }
-    return { success: true };
-}
-
-async function unregisterFromEvent(eventId: string) {
-    console.log(`Unregistering from event: ${eventId}`);
-    await new Promise(res => setTimeout(res, 500));
-     const event = mockEvents.find(e => e.id === eventId);
-    if (event) {
-      event.participants = event.participants.filter(p => p !== 'student@test.com');
-    }
-    return { success: true };
-}
-
 export default function StudentDashboard() {
   const { toast } = useToast();
+  const [events, setEvents] = useState<Event[]>(mockEvents);
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
   const [isPending, startTransition] = useTransition();
 
   // In a real app, this would come from user data.
-  // We initialize with one registration for demonstration.
-  const [registeredEvents, setRegisteredEvents] = useState(['1']);
-
+  // We initialize with the registrations from mock data.
+  const [registeredEvents, setRegisteredEvents] = useState<string[]>(() => {
+    const userEmail = localStorage.getItem('userEmail');
+    return events.filter(e => e.participants.includes(userEmail || '')).map(e => e.id);
+  });
+  
   const filteredEvents = useMemo(() => {
-    return mockEvents.filter(event => {
-      const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return events.filter(event => {
+      const matchesSearch = (event.title.toLowerCase() + " " + event.description.toLowerCase()).includes(searchTerm.toLowerCase());
       const matchesCategory = category === 'all' || event.category === category;
       return matchesSearch && matchesCategory;
     });
-  }, [searchTerm, category]);
+  }, [events, searchTerm, category]);
 
-  const handleRegister = async (eventId: string) => {
-    startTransition(async () => {
-        const result = await registerForEvent(eventId);
-        if (result.success) {
+  const handleRegister = (eventId: string) => {
+    startTransition(() => {
+        const eventToUpdate = events.find(e => e.id === eventId);
+        const userEmail = localStorage.getItem('userEmail');
+        if (eventToUpdate && userEmail && !eventToUpdate.participants.includes(userEmail)) {
+            const updatedEvent = { ...eventToUpdate, participants: [...eventToUpdate.participants, userEmail] };
+            const updatedEvents = events.map(e => e.id === eventId ? updatedEvent : e);
+            setEvents(updatedEvents);
             setRegisteredEvents(prev => [...prev, eventId]);
             toast({ title: "Successfully Registered!", description: "You will be notified of any updates." });
         } else {
-            toast({ variant: "destructive", title: "Registration Failed", description: "Please try again." });
+            toast({ variant: "destructive", title: "Registration Failed", description: "Already registered or error." });
         }
     });
   };
 
-  const handleUnregister = async (eventId: string) => {
-    startTransition(async () => {
-        const result = await unregisterFromEvent(eventId);
-        if (result.success) {
+  const handleUnregister = (eventId: string) => {
+    startTransition(() => {
+        const eventToUpdate = events.find(e => e.id === eventId);
+        const userEmail = localStorage.getItem('userEmail');
+        if (eventToUpdate && userEmail) {
+            const updatedEvent = { ...eventToUpdate, participants: eventToUpdate.participants.filter(p => p !== userEmail) };
+            const updatedEvents = events.map(e => e.id === eventId ? updatedEvent : e);
+            setEvents(updatedEvents);
             setRegisteredEvents(prev => prev.filter(id => id !== eventId));
             toast({ title: "Successfully Unregistered" });
         } else {
@@ -112,8 +101,8 @@ export default function StudentDashboard() {
               key={event.id}
               event={event}
               isRegistered={registeredEvents.includes(event.id)}
-              onRegister={handleRegister}
-              onUnregister={handleUnregister}
+              onRegister={() => handleRegister(event.id)}
+              onUnregister={() => handleUnregister(event.id)}
             />
           ))}
         </div>

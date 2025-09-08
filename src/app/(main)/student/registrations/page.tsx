@@ -1,27 +1,35 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { EventCard } from '@/components/event-card';
 import { mockEvents } from '@/lib/data';
 import { type Event } from '@/lib/data';
-
-// This is a mock of what would be a user-specific list of registrations
-const userRegisteredEventIds = ['1'];
+import { useToast } from '@/hooks/use-toast';
 
 export default function MyRegistrationsPage() {
   const [myEvents, setMyEvents] = useState<Event[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // In a real app, you'd fetch this data. Here we filter the mock data.
-    const registered = mockEvents.filter(event => userRegisteredEventIds.includes(event.id));
-    setMyEvents(registered);
+    const userEmail = localStorage.getItem('userEmail');
+    if (userEmail) {
+      const registered = mockEvents.filter(event => event.participants.includes(userEmail));
+      setMyEvents(registered);
+    }
   }, []);
 
-  const handleUnregister = async (eventId: string) => {
-    // Mock unregister logic
-    setMyEvents(prev => prev.filter(e => e.id !== eventId));
-    // Here you would also update the global state or refetch data
-  };
+  const handleUnregister = useCallback((eventId: string) => {
+    const userEmail = localStorage.getItem('userEmail');
+    const eventToUpdate = mockEvents.find(e => e.id === eventId);
+
+    if (eventToUpdate && userEmail) {
+      eventToUpdate.participants = eventToUpdate.participants.filter(p => p !== userEmail);
+      setMyEvents(prev => prev.filter(e => e.id !== eventId));
+      toast({ title: "Successfully Unregistered" });
+    } else {
+      toast({ variant: "destructive", title: "Failed to Unregister" });
+    }
+  }, [toast]);
 
   return (
     <div>
@@ -34,7 +42,7 @@ export default function MyRegistrationsPage() {
                         event={event}
                         isRegistered={true}
                         onRegister={() => {}} // Should not be callable from this page
-                        onUnregister={handleUnregister}
+                        onUnregister={() => handleUnregister(event.id)}
                     />
                 ))}
             </div>
