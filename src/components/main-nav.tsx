@@ -12,7 +12,7 @@ import {
   LogOut,
   PlusCircle,
   Settings,
-  Sparkles,
+  Send,
 } from "lucide-react";
 
 import { useUserRole } from "@/hooks/use-user-role";
@@ -41,7 +41,7 @@ import { BottomNav } from "./bottom-nav";
 const studentNav = [
   { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/student/registrations", label: "My Registrations", icon: BookOpen },
-  { href: "/student/ask", label: "Ask Teacher", icon: Sparkles },
+  { href: "/student/ask", label: "Ask Teacher", icon: Send },
   { href: "/student/notifications", label: "Notifications", icon: Bell },
   { href: "/student/profile", label: "Profile", icon: Settings },
 ];
@@ -50,7 +50,7 @@ const teacherNav = [
   { href: "/teacher/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/teacher/events", label: "Manage Events", icon: Calendar },
   { href: "/teacher/events/create", label: "Create Event", icon: PlusCircle },
-  { href: "/teacher/assistant", label: "AI Assistant", icon: Sparkles },
+  { href: "/teacher/assistant", label: "AI Assistant", icon: Bell }, // Changed to Bell
 ];
 
 export function MainNav({ children }: { children: React.ReactNode }) {

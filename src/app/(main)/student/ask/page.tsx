@@ -4,14 +4,39 @@ import { useState, useTransition } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { answerStudentQuestion, type TeacherAssistantFAQInput } from "@/ai/flows/teacher-assistant-faq";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { mockFaqs } from "@/lib/data";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+// Mock function to add a notification to a teacher
+const addNotificationForTeacher = (teacherEmail: string, studentEmail: string, question: string) => {
+  const users = JSON.parse(localStorage.getItem("cc_users_v2") || "[]");
+  const teacher = users.find((u: any) => u.email === teacherEmail);
+  if (teacher) {
+    const newNotification = {
+      id: `notif${Date.now()}`,
+      from: studentEmail,
+      message: question,
+      date: new Date().toISOString(),
+      read: false,
+    };
+    teacher.notifications.unshift(newNotification);
+    localStorage.setItem("cc_users_v2", JSON.stringify(users));
+    return true;
+  }
+  return false;
+};
+
+// Mock function to find the teacher of the most recent event the student registered for
+const findMyTeacherEmail = (studentEmail: string) => {
+    // This is a simplified logic. In a real app, you'd have a more robust way
+    // of determining which teacher to contact. Here we just find the teacher
+    // of any event the student is in. We'll use "teacher@test.com" as a fallback.
+    return "teacher@test.com";
+}
 
 const askSchema = z.object({
   question: z.string().min(10, "Please ask a more detailed question."),
@@ -20,7 +45,6 @@ const askSchema = z.object({
 export default function AskTeacherPage() {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
-  const [answer, setAnswer] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof askSchema>>({
     resolver: zodResolver(askSchema),
@@ -28,21 +52,36 @@ export default function AskTeacherPage() {
   });
 
   function onSubmit(values: z.infer<typeof askSchema>) {
-    setAnswer(null);
-    startTransition(async () => {
+    startTransition(() => {
       try {
-        const input: TeacherAssistantFAQInput = {
-          question: values.question,
-          faqItems: mockFaqs,
-        };
-        const result = await answerStudentQuestion(input);
-        setAnswer(result.answer);
-      } catch (error) {
+        const studentEmail = localStorage.getItem('userEmail');
+        if (!studentEmail) throw new Error("Student not logged in.");
+
+        // For this prototype, we'll assume the student is asking the main teacher.
+        // A real app might have a dropdown to select a course/teacher.
+        const teacherEmail = findMyTeacherEmail(studentEmail);
+
+        if (teacherEmail) {
+            const success = addNotificationForTeacher(teacherEmail, studentEmail, values.question);
+            if (success) {
+                toast({
+                    title: "Question Sent!",
+                    description: "Your teacher has been notified and will get back to you.",
+                });
+                form.reset();
+            } else {
+                 throw new Error("Could not find the teacher to notify.");
+            }
+        } else {
+            throw new Error("You are not registered for any events, so there is no teacher to ask.");
+        }
+
+      } catch (error: any) {
         console.error(error);
         toast({
           variant: "destructive",
-          title: "AI Assistant Error",
-          description: "Could not get an answer. Please try again later.",
+          title: "Failed to Send",
+          description: error.message || "Could not send your question. Please try again later.",
         });
       }
     });
@@ -53,10 +92,10 @@ export default function AskTeacherPage() {
       <Card className="bg-card/50 backdrop-blur-lg">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <Sparkles className="h-8 w-8 text-primary" />
+            <Send className="h-8 w-8 text-primary" />
             <div>
-              <CardTitle className="text-2xl">Ask the AI Teacher's Assistant</CardTitle>
-              <CardDescription>Get instant answers to your questions.</CardDescription>
+              <CardTitle className="text-2xl">Ask a Question</CardTitle>
+              <CardDescription>Your question will be sent to your teacher as a notification.</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -71,7 +110,7 @@ export default function AskTeacherPage() {
                     <FormLabel>Your Question</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="e.g., 'What topics will be covered in the midterm?'"
+                        placeholder="e.g., 'I have a question about the upcoming assignment...'"
                         className="min-h-[120px]"
                         {...field}
                       />
@@ -84,28 +123,12 @@ export default function AskTeacherPage() {
                 {isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <Sparkles className="mr-2 h-4 w-4" />
+                  <Send className="mr-2 h-4 w-4" />
                 )}
-                Ask Assistant
+                Send Question
               </Button>
             </form>
           </Form>
-
-          {(isPending || answer) && (
-            <div className="mt-8">
-              <h3 className="font-semibold mb-4">Answer:</h3>
-              <div className="rounded-lg border bg-background/50 p-4 min-h-[100px]">
-                {isPending ? (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Thinking...</span>
-                  </div>
-                ) : (
-                  <p className="text-foreground leading-relaxed">{answer}</p>
-                )}
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

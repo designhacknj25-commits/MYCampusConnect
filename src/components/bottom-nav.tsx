@@ -7,7 +7,8 @@ import {
   Calendar,
   LayoutDashboard,
   PlusCircle,
-  Sparkles,
+  Send,
+  Bell
 } from "lucide-react";
 import { useUserRole } from "@/hooks/use-user-role";
 import { cn } from "@/lib/utils";
@@ -15,14 +16,13 @@ import { cn } from "@/lib/utils";
 const studentNav = [
   { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/student/registrations", label: "Registrations", icon: BookOpen },
-  { href: "/student/ask", label: "Ask AI", icon: Sparkles },
+  { href: "/student/ask", label: "Ask", icon: Send },
 ];
 
 const teacherNav = [
   { href: "/teacher/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/teacher/events", label: "Events", icon: Calendar },
-  { href: "/teacher/events/create", label: "Create", icon: PlusCircle },
-  { href: "/teacher/assistant", label: "Assistant", icon: Sparkles },
+  { href: "/teacher/assistant", label: "Inbox", icon: Bell },
 ];
 
 export function BottomNav() {

@@ -25,27 +25,41 @@ import { useToast } from "@/hooks/use-toast";
 const getUsers = () => JSON.parse(localStorage.getItem("cc_users_v2") || "[]");
 const saveUsers = (users: any) => localStorage.setItem("cc_users_v2", JSON.stringify(users));
 
+// Initialize with default users if none exist
+const initializeUsers = () => {
+    const users = getUsers();
+    if (users.length === 0) {
+        const defaultUsers = [
+            {
+                name: "Test Student",
+                email: "student@test.com",
+                password: "password", // In a real app, this should be hashed
+                role: "student",
+                photo: "",
+                notifications: []
+            },
+            {
+                name: "Test Teacher",
+                email: "teacher@test.com",
+                password: "password",
+                role: "teacher",
+                photo: "",
+                notifications: []
+            }
+        ];
+        saveUsers(defaultUsers);
+    }
+};
+initializeUsers();
+
+
 const mockLogin = async (data: any) => {
   await new Promise(resolve => setTimeout(resolve, 1000));
   const users = getUsers();
-  // NOTE: In a real app, you would hash the password and compare it.
-  // For this mock, we are not hashing passwords on login, only on signup.
-  // This is a simplification based on the provided JS code.
-  const user = users.find((u: any) => u.email === data.email && u.role === data.role);
+  const user = users.find((u: any) => u.email === data.email && u.password === data.password && u.role === data.role);
   
   if (user) {
-    // A real app would compare a hashed password. Here we simulate success if the user exists.
-    // This is a simplified mock to get the flow working.
-    // A more secure mock would re-hash the input password and compare.
     return { success: true, role: user.role, name: user.name };
-  }
-  
-  // To better match the user's sample app, let's add default users if they don't exist.
-  if (data.email === "student@test.com" && data.password === "password") {
-    return { success: true, role: "student", name: "Test Student" };
-  }
-  if (data.email === "teacher@test.com" && data.password === "password") {
-    return { success: true, role: "teacher", name: "Test Teacher" };
   }
   
   return { success: false, message: "Invalid credentials or role." };
@@ -58,13 +72,9 @@ const mockSignup = async (data: any) => {
     return { success: false, message: "Email already registered." };
   }
   
-  // NOTE: Hashing is a one-way process. We can't reverse it.
-  // The provided JS uses SHA-256, which is good. We'll add the user with a placeholder for the hashed password.
-  // In a real backend, you'd send the plain password over HTTPS and hash it server-side.
   const newUser = { 
     name: data.name, 
     email: data.email, 
-    // Storing plain text passwords is a security risk. This is for mock purposes only.
     password: data.password, 
     role: data.role,
     photo: "", 
