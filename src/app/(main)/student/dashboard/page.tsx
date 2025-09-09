@@ -4,7 +4,7 @@ import { useState, useMemo, useTransition, useEffect } from 'react';
 import { EventCard } from '@/components/event-card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getMockEvents, saveMockEvents, type Event } from '@/lib/data';
+import { getEvents, saveEvents, type Event } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -16,7 +16,7 @@ export default function StudentDashboard() {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    setEvents(getMockEvents());
+    setEvents(getEvents());
   }, []);
 
   const registeredEvents = useMemo(() => {
@@ -34,7 +34,7 @@ export default function StudentDashboard() {
 
   const handleRegister = (eventId: string) => {
     startTransition(() => {
-      const allEvents = getMockEvents();
+      const allEvents = getEvents();
       const eventToUpdate = allEvents.find(e => e.id === eventId);
       const userEmail = localStorage.getItem('userEmail');
 
@@ -42,7 +42,7 @@ export default function StudentDashboard() {
         const updatedEvent = { ...eventToUpdate, participants: [...eventToUpdate.participants, userEmail] };
         const updatedEvents = allEvents.map(e => e.id === eventId ? updatedEvent : e);
         
-        saveMockEvents(updatedEvents);
+        saveEvents(updatedEvents);
         setEvents(updatedEvents); // Update local state to re-render
 
         toast({ title: "Successfully Registered!", description: "You will be notified of any updates." });
@@ -54,7 +54,7 @@ export default function StudentDashboard() {
 
   const handleUnregister = (eventId: string) => {
     startTransition(() => {
-      const allEvents = getMockEvents();
+      const allEvents = getEvents();
       const eventToUpdate = allEvents.find(e => e.id === eventId);
       const userEmail = localStorage.getItem('userEmail');
 
@@ -62,7 +62,7 @@ export default function StudentDashboard() {
         const updatedEvent = { ...eventToUpdate, participants: eventToUpdate.participants.filter(p => p !== userEmail) };
         const updatedEvents = allEvents.map(e => e.id === eventId ? updatedEvent : e);
         
-        saveMockEvents(updatedEvents);
+        saveEvents(updatedEvents);
         setEvents(updatedEvents); // Update local state to re-render
         
         toast({ title: "Successfully Unregistered" });

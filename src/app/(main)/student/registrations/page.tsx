@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { EventCard } from '@/components/event-card';
-import { getMockEvents, saveMockEvents, type Event } from '@/lib/data';
+import { getEvents, saveEvents, type Event } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 
 export default function MyRegistrationsPage() {
@@ -12,7 +12,7 @@ export default function MyRegistrationsPage() {
   useEffect(() => {
     const userEmail = localStorage.getItem('userEmail');
     if (userEmail) {
-      const allEvents = getMockEvents();
+      const allEvents = getEvents();
       const registered = allEvents.filter(event => event.participants.includes(userEmail));
       setMyEvents(registered);
     }
@@ -20,14 +20,14 @@ export default function MyRegistrationsPage() {
 
   const handleUnregister = useCallback((eventId: string) => {
     const userEmail = localStorage.getItem('userEmail');
-    const allEvents = getMockEvents();
+    const allEvents = getEvents();
     const eventToUpdate = allEvents.find(e => e.id === eventId);
 
     if (eventToUpdate && userEmail) {
       const updatedEvent = { ...eventToUpdate, participants: eventToUpdate.participants.filter(p => p !== userEmail) };
       const updatedEvents = allEvents.map(e => e.id === eventId ? updatedEvent : e);
       
-      saveMockEvents(updatedEvents);
+      saveEvents(updatedEvents);
       setMyEvents(prev => prev.filter(e => e.id !== eventId));
       
       toast({ title: "Successfully Unregistered" });

@@ -2,20 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
-interface Notification {
-    id: string;
-    from: string; // student email
-    message: string;
-    date: string;
-    read: boolean;
-}
+import { getUsers, type Notification } from "@/lib/data";
 
 const getMyNotifications = (teacherEmail: string): Notification[] => {
-    const users = JSON.parse(localStorage.getItem("cc_users_v2") || "[]");
-    const teacher = users.find((u: any) => u.email === teacherEmail);
+    const users = getUsers();
+    const teacher = users.find((u) => u.email === teacherEmail);
     return teacher ? teacher.notifications : [];
 };
 
@@ -40,18 +33,18 @@ export default function NotificationsPage() {
         {notifications.length > 0 ? (
           notifications.map((notif) => (
             <Card key={notif.id} className="bg-card/50">
-              <CardHeader className="flex flex-row items-start gap-4 space-y-0">
+              <CardHeader className="flex flex-row items-start gap-4 space-y-0 p-4">
                  <Avatar>
                     <AvatarFallback>{notif.from.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
-                     <CardTitle className="text-base font-medium">{notif.from}</CardTitle>
+                     <p className="font-medium">{notif.from}</p>
                      <p className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(notif.date), { addSuffix: true })}
                      </p>
                   </div>
-                  <CardDescription className="mt-1">{notif.message}</CardDescription>
+                  <p className="mt-1 text-sm text-muted-foreground">{notif.message}</p>
                 </div>
               </CardHeader>
             </Card>

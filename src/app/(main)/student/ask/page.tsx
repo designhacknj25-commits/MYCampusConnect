@@ -10,12 +10,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getUsers, saveUsers, getEvents } from "@/lib/data";
 
-// Mock function to add a notification to a teacher
+// Helper function to add a notification to a teacher
 const addNotificationForTeacher = (teacherEmail: string, studentEmail: string, question: string) => {
-  const users = JSON.parse(localStorage.getItem("cc_users_v2") || "[]");
-  const teacher = users.find((u: any) => u.email === teacherEmail);
-  if (teacher) {
+  const users = getUsers();
+  const teacherIndex = users.findIndex((u) => u.email === teacherEmail);
+
+  if (teacherIndex !== -1) {
     const newNotification = {
       id: `notif${Date.now()}`,
       from: studentEmail,
@@ -23,18 +25,24 @@ const addNotificationForTeacher = (teacherEmail: string, studentEmail: string, q
       date: new Date().toISOString(),
       read: false,
     };
-    teacher.notifications.unshift(newNotification);
-    localStorage.setItem("cc_users_v2", JSON.stringify(users));
+    users[teacherIndex].notifications.unshift(newNotification);
+    saveUsers(users);
     return true;
   }
   return false;
 };
 
-// Mock function to find the teacher of the most recent event the student registered for
+// Helper function to find the teacher of the most recent event the student registered for
 const findMyTeacherEmail = (studentEmail: string) => {
-    // This is a simplified logic. In a real app, you'd have a more robust way
-    // of determining which teacher to contact. Here we just find the teacher
-    // of any event the student is in. We'll use "teacher@test.com" as a fallback.
+    const events = getEvents();
+    const myEvents = events.filter(e => e.participants.includes(studentEmail));
+    
+    if (myEvents.length > 0) {
+        // Sort by date to find the most recent event
+        myEvents.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return myEvents[0].teacherEmail;
+    }
+    // Fallback to the default teacher if no events are found
     return "teacher@test.com";
 }
 
@@ -57,8 +65,6 @@ export default function AskTeacherPage() {
         const studentEmail = localStorage.getItem('userEmail');
         if (!studentEmail) throw new Error("Student not logged in.");
 
-        // For this prototype, we'll assume the student is asking the main teacher.
-        // A real app might have a dropdown to select a course/teacher.
         const teacherEmail = findMyTeacherEmail(studentEmail);
 
         if (teacherEmail) {
@@ -95,7 +101,7 @@ export default function AskTeacherPage() {
             <Send className="h-8 w-8 text-primary" />
             <div>
               <CardTitle className="text-2xl">Ask a Question</CardTitle>
-              <CardDescription>Your question will be sent to your teacher as a notification.</CardDescription>
+              <CardDescription>Your question will be sent to your most recent event's teacher.</CardDescription>
             </div>
           </div>
         </CardHeader>

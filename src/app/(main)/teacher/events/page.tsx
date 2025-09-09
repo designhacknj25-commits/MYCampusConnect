@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMockEvents, saveMockEvents, type Event } from '@/lib/data';
+import { getEvents, saveEvents, type Event } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,14 +29,14 @@ export default function ManageEventsPage() {
 
     useEffect(() => {
         const userEmail = localStorage.getItem('userEmail');
-        const allEvents = getMockEvents();
+        const allEvents = getEvents();
         setEvents(allEvents.filter(e => e.teacherEmail === userEmail));
     }, []);
 
     const deleteEvent = (eventId: string) => {
-        const allEvents = getMockEvents();
+        const allEvents = getEvents();
         const updatedEvents = allEvents.filter(e => e.id !== eventId);
-        saveMockEvents(updatedEvents);
+        saveEvents(updatedEvents);
         setEvents(prevEvents => prevEvents.filter(e => e.id !== eventId));
         toast({ title: "Event Deleted" });
     };

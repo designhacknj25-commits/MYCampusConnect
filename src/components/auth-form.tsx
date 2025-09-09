@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { getUsers, saveUsers, type User } from "@/lib/data";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,38 +21,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock data storage and retrieval functions
-const getUsers = () => JSON.parse(localStorage.getItem("cc_users_v2") || "[]");
-const saveUsers = (users: any) => localStorage.setItem("cc_users_v2", JSON.stringify(users));
-
-// Initialize with default users if none exist
-const initializeUsers = () => {
-    const users = getUsers();
-    if (users.length === 0) {
-        const defaultUsers = [
-            {
-                name: "Test Student",
-                email: "student@test.com",
-                password: "password", // In a real app, this should be hashed
-                role: "student",
-                photo: "",
-                notifications: []
-            },
-            {
-                name: "Test Teacher",
-                email: "teacher@test.com",
-                password: "password",
-                role: "teacher",
-                photo: "",
-                notifications: []
-            }
-        ];
-        saveUsers(defaultUsers);
-    }
-};
-initializeUsers();
-
 
 const mockLogin = async (data: any) => {
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -72,7 +41,7 @@ const mockSignup = async (data: any) => {
     return { success: false, message: "Email already registered." };
   }
   
-  const newUser = { 
+  const newUser: User = { 
     name: data.name, 
     email: data.email, 
     password: data.password, 

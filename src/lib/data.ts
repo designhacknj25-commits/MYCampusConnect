@@ -11,44 +11,118 @@ export type Event = {
   participants: string[]; // array of student emails
 };
 
+export interface Notification {
+  id: string;
+  from: string; // student email
+  message: string;
+  date: string;
+  read: boolean;
+}
+
+export type User = {
+    name: string;
+    email: string;
+    password: string;
+    role: "student" | "teacher";
+    photo: string;
+    notifications: Notification[];
+}
+
 export type FAQ = {
   id: string;
   question: string;
   answer: string;
 };
 
-// This function will be the single source of truth for getting events
-export const getMockEvents = (): Event[] => {
-  if (typeof window === "undefined") {
-    return [];
-  }
-  const events = localStorage.getItem('cc_events_v1');
+// =================================================================
+// Universal Data Access Functions using localStorage
+// =================================================================
+
+const isServer = typeof window === 'undefined';
+
+// --- Users ---
+const USERS_KEY = 'cc_users_v2';
+
+export const getUsers = (): User[] => {
+  if (isServer) return [];
+  const users = localStorage.getItem(USERS_KEY);
+  return users ? JSON.parse(users) : [];
+};
+
+export const saveUsers = (users: User[]) => {
+  if (isServer) return;
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+};
+
+export const initializeUsers = () => {
+    if (getUsers().length === 0) {
+        const defaultUsers: User[] = [
+            {
+                name: "Test Student",
+                email: "student@test.com",
+                password: "password",
+                role: "student",
+                photo: "",
+                notifications: []
+            },
+            {
+                name: "Test Teacher",
+                email: "teacher@test.com",
+                password: "password",
+                role: "teacher",
+                photo: "",
+                notifications: []
+            }
+        ];
+        saveUsers(defaultUsers);
+    }
+};
+
+// --- Events ---
+const EVENTS_KEY = 'cc_events_v1';
+
+export const getEvents = (): Event[] => {
+  if (isServer) return [];
+  const events = localStorage.getItem(EVENTS_KEY);
   return events ? JSON.parse(events) : [];
 }
 
-// This function will be used to save events
-export const saveMockEvents = (events: Event[]) => {
-    if (typeof window === "undefined") {
-    return;
-  }
-  localStorage.setItem('cc_events_v1', JSON.stringify(events));
+export const saveEvents = (events: Event[]) => {
+  if (isServer) return;
+  localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
 }
 
+// Initialize with no events for a clean slate
+export const initializeEvents = () => {
+    if (getEvents().length === 0) {
+        saveEvents([]);
+    }
+}
 
-export const mockFaqs: FAQ[] = [
-  {
-    id: 'faq1',
-    question: 'What is the deadline for project submission?',
-    answer: 'The final project deadline is May 15th at 11:59 PM. No late submissions will be accepted.',
-  },
-  {
-    id: 'faq2',
-    question: 'Where can I find the course materials?',
-    answer: 'All course materials, including lecture slides and recordings, are available on the "Materials" tab of the course portal.',
-  },
-  {
-    id: 'faq3',
-    question: 'How are grades calculated?',
-    answer: 'Grades are based on assignments (40%), a midterm exam (25%), a final project (30%), and participation (5%).',
-  }
-];
+// --- FAQs ---
+// For this prototype, FAQs are static, but we can create functions if needed.
+export const getFaqs = (): FAQ[] => {
+  return [
+    {
+      id: 'faq1',
+      question: 'What is the deadline for project submission?',
+      answer: 'The final project deadline is May 15th at 11:59 PM. No late submissions will be accepted.',
+    },
+    {
+      id: 'faq2',
+      question: 'Where can I find the course materials?',
+      answer: 'All course materials, including lecture slides and recordings, are available on the "Materials" tab of the course portal.',
+    },
+    {
+      id: 'faq3',
+      question: 'How are grades calculated?',
+      answer: 'Grades are based on assignments (40%), a midterm exam (25%), a final project (30%), and participation (5%).',
+    }
+  ];
+};
+
+// Run initializers
+if (!isServer) {
+    initializeUsers();
+    initializeEvents();
+}

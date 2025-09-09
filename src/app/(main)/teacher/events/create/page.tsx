@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { getMockEvents, saveMockEvents } from '@/lib/data';
+import { getEvents, saveEvents } from '@/lib/data';
 
 const eventSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -38,7 +38,7 @@ export default function CreateEventPage() {
   });
 
   const onSubmit = (values: z.infer<typeof eventSchema>) => {
-    const allEvents = getMockEvents();
+    const allEvents = getEvents();
     const newEvent = {
         id: `evt${Date.now()}`,
         ...values,
@@ -47,7 +47,7 @@ export default function CreateEventPage() {
         participants: [],
     };
     
-    saveMockEvents([...allEvents, newEvent]);
+    saveEvents([...allEvents, newEvent]);
 
     toast({
       title: 'Event Created!',
