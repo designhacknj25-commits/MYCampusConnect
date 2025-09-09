@@ -13,6 +13,8 @@ import {
   Settings,
   Send,
   Loader2,
+  HelpCircle,
+  Users
 } from "lucide-react";
 
 import { useUserRole } from "@/hooks/use-user-role";
@@ -37,11 +39,14 @@ import {
 } from "@/components/ui/sidebar";
 import { BottomNav } from "./bottom-nav";
 import { useSidebar } from "./ui/sidebar";
+import { getUsers, type User } from "@/lib/data";
+
 
 const studentNav = [
   { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/student/registrations", label: "My Registrations", icon: BookOpen },
   { href: "/student/ask", label: "Ask Teacher", icon: Send },
+  { href: "/student/faq", label: "FAQ", icon: HelpCircle },
   { href: "/student/notifications", label: "Notifications", icon: Bell },
   { href: "/student/profile", label: "Profile", icon: Settings },
 ];
@@ -51,23 +56,32 @@ const teacherNav = [
   { href: "/teacher/events", label: "Manage Events", icon: Calendar },
   { href: "/teacher/events/create", label: "Create Event", icon: PlusCircle },
   { href: "/teacher/assistant", label: "Inbox", icon: Bell },
+  { href: "/teacher/faq", label: "Manage FAQs", icon: Users },
 ];
 
 export function MainNav({ children }: { children: React.ReactNode }) {
   const role = useUserRole();
   const pathname = usePathname();
   const router = useRouter();
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const storedRole = localStorage.getItem('userRole');
     const storedEmail = localStorage.getItem('userEmail');
-    if (!storedRole) {
+    if (!storedRole || !storedEmail) {
       router.push('/login');
     } else {
-      setUserEmail(storedEmail);
+      const users = getUsers();
+      const currentUser = users.find(u => u.email === storedEmail);
+      if (currentUser) {
+        setUser(currentUser);
+        setUnreadCount(currentUser.notifications.filter(n => !n.read).length);
+      } else {
+         router.push('/login');
+      }
     }
-  }, [router]);
+  }, [router, pathname]); // Re-check on path change to update notifications
 
   const handleLogout = () => {
     localStorage.removeItem("userRole");
@@ -77,7 +91,7 @@ export function MainNav({ children }: { children: React.ReactNode }) {
 
   const navItems = role === "teacher" ? teacherNav : studentNav;
 
-  if (!role) {
+  if (!role || !user) {
     return (
         <div className="flex items-center justify-center min-h-screen">
             <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -108,6 +122,11 @@ export function MainNav({ children }: { children: React.ReactNode }) {
                     <Link href={item.href}>
                       <item.icon />
                       <span>{item.label}</span>
+                      {(item.href.includes('assistant') || item.href.includes('notifications')) && unreadCount > 0 && (
+                        <span className="ml-auto inline-flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">
+                          {unreadCount}
+                        </span>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -126,21 +145,27 @@ export function MainNav({ children }: { children: React.ReactNode }) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={`https://picsum.photos/seed/${role}/100`} alt="User avatar" />
-                  <AvatarFallback>{role === 'student' ? 'S' : 'T'}</AvatarFallback>
+                  <AvatarImage src={user.photo || `https://picsum.photos/seed/${role}/100`} alt="User avatar" />
+                  <AvatarFallback>{user.name ? user.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none capitalize">{role}</p>
+                  <p className="text-sm font-medium leading-none capitalize">{user.name}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {userEmail || (role === 'student' ? 'student@test.com' : 'teacher@test.com')}
+                    {user.email}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+               <DropdownMenuItem asChild>
+                 <Link href={`/${role}/profile`}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                 </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>

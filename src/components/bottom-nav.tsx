@@ -6,7 +6,7 @@ import {
   BookOpen,
   Calendar,
   LayoutDashboard,
-  PlusCircle,
+  HelpCircle,
   Send,
   Bell
 } from "lucide-react";
@@ -17,6 +17,7 @@ const studentNav = [
   { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/student/registrations", label: "Registrations", icon: BookOpen },
   { href: "/student/ask", label: "Ask", icon: Send },
+  { href: "/student/faq", label: "FAQ", icon: HelpCircle },
 ];
 
 const teacherNav = [

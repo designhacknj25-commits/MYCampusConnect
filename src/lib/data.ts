@@ -24,7 +24,8 @@ export type User = {
     email: string;
     password: string;
     role: "student" | "teacher";
-    photo: string;
+    photo: string; // Will store as a data URI
+    bio: string;
     notifications: Notification[];
 }
 
@@ -41,7 +42,7 @@ export type FAQ = {
 const isServer = typeof window === 'undefined';
 
 // --- Users ---
-const USERS_KEY = 'cc_users_v2';
+const USERS_KEY = 'cc_users_v3';
 
 export const getUsers = (): User[] => {
   if (isServer) return [];
@@ -63,6 +64,7 @@ export const initializeUsers = () => {
                 password: "password",
                 role: "student",
                 photo: "",
+                bio: "Eager to learn and participate in campus events!",
                 notifications: []
             },
             {
@@ -71,6 +73,7 @@ export const initializeUsers = () => {
                 password: "password",
                 role: "teacher",
                 photo: "",
+                bio: "Dedicated to fostering a vibrant learning community.",
                 notifications: []
             }
         ];
@@ -100,26 +103,36 @@ export const initializeEvents = () => {
 }
 
 // --- FAQs ---
-// For this prototype, FAQs are static, but we can create functions if needed.
+const FAQS_KEY = 'cc_faqs_v1';
+
 export const getFaqs = (): FAQ[] => {
-  return [
-    {
-      id: 'faq1',
-      question: 'What is the deadline for project submission?',
-      answer: 'The final project deadline is May 15th at 11:59 PM. No late submissions will be accepted.',
-    },
-    {
-      id: 'faq2',
-      question: 'Where can I find the course materials?',
-      answer: 'All course materials, including lecture slides and recordings, are available on the "Materials" tab of the course portal.',
-    },
-    {
-      id: 'faq3',
-      question: 'How are grades calculated?',
-      answer: 'Grades are based on assignments (40%), a midterm exam (25%), a final project (30%), and participation (5%).',
-    }
-  ];
+  if (isServer) return [];
+  const faqs = localStorage.getItem(FAQS_KEY);
+  // Start with some default FAQs if none are saved
+  if (!faqs) {
+    const defaultFaqs = [
+      {
+        id: 'faq1',
+        question: 'What is the deadline for project submission?',
+        answer: 'The final project deadline is May 15th at 11:59 PM. No late submissions will be accepted.',
+      },
+      {
+        id: 'faq2',
+        question: 'Where can I find the course materials?',
+        answer: 'All course materials, including lecture slides and recordings, are available on the "Materials" tab of the course portal.',
+      },
+    ];
+    saveFaqs(defaultFaqs);
+    return defaultFaqs;
+  }
+  return JSON.parse(faqs);
 };
+
+export const saveFaqs = (faqs: FAQ[]) => {
+  if (isServer) return;
+  localStorage.setItem(FAQS_KEY, JSON.stringify(faqs));
+};
+
 
 // Run initializers
 if (!isServer) {

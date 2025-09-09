@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -25,13 +25,19 @@ import { useToast } from "@/hooks/use-toast";
 const mockLogin = async (data: any) => {
   await new Promise(resolve => setTimeout(resolve, 1000));
   const users = getUsers();
-  const user = users.find((u: any) => u.email === data.email && u.password === data.password && u.role === data.role);
+  const user = users.find((u: any) => u.email === data.email && u.password === data.password);
   
   if (user) {
-    return { success: true, role: user.role, name: user.name };
+    // If the role on the form matches the user's role, login is successful.
+    if (user.role === data.role) {
+      return { success: true, role: user.role, name: user.name, email: user.email };
+    } else {
+      // If role does not match, return a specific error
+      return { success: false, message: `An account exists for this email as a '${user.role}'. Please select the correct role.` };
+    }
   }
   
-  return { success: false, message: "Invalid credentials or role." };
+  return { success: false, message: "Invalid credentials." };
 };
 
 const mockSignup = async (data: any) => {
@@ -46,7 +52,8 @@ const mockSignup = async (data: any) => {
     email: data.email, 
     password: data.password, 
     role: data.role,
-    photo: "", 
+    photo: "",
+    bio: "",
     notifications: [] 
   };
   users.push(newUser);
@@ -71,12 +78,15 @@ const signupSchema = formSchema.refine((data) => !!data.name && data.name.length
 
 export function AuthForm() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
+  
   const isLoginPage = pathname === "/login";
+  // Get role from query params, default to 'student'
+  const defaultRole = searchParams.get('role') === 'teacher' ? 'teacher' : 'student';
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(isLoginPage ? formSchema : signupSchema),
@@ -84,7 +94,7 @@ export function AuthForm() {
       name: "",
       email: "",
       password: "",
-      role: "student",
+      role: defaultRole,
     },
   });
 
@@ -100,7 +110,7 @@ export function AuthForm() {
           });
           const redirectPath = result.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
           localStorage.setItem('userRole', result.role);
-          localStorage.setItem('userEmail', values.email); // Save email for session
+          localStorage.setItem('userEmail', result.email); // Save email for session
           router.push(redirectPath);
           router.refresh(); // Force a refresh to update layout
         } else {
@@ -117,7 +127,8 @@ export function AuthForm() {
             title: "Signup Successful",
             description: "Please log in with your new account.",
           });
-          router.push("/login");
+          // Redirect to login page with the role pre-selected
+          router.push(`/login?role=${values.role}`);
         } else {
            toast({
             variant: "destructive",
@@ -247,7 +258,7 @@ export function AuthForm() {
       </Form>
       <div className="mt-6 text-center text-sm">
         {isLoginPage ? "Don't have an account? " : "Already have an account? "}
-        <Link href={isLoginPage ? "/signup" : "/login"} className="font-medium text-primary hover:underline">
+        <Link href={isLoginPage ? `/signup?role=${form.getValues('role')}` : `/login?role=${form.getValues('role')}`} className="font-medium text-primary hover:underline">
           {isLoginPage ? "Sign Up" : "Login"}
         </Link>
       </div>
